@@ -24,10 +24,10 @@ Make sure it exists and the current user has read permissions.`)
 }
 
 func status(short string, desc string) {
-	if len(short) >= 15 {
-		short = short[0:15]
+	if len(short) >= 16 {
+		short = short[0:16]
 	}
-	fmt.Printf("%15s :: %s\n", Cyan(short), desc)
+	fmt.Printf("%16s :: %s\n", Cyan(short), desc)
 }
 
 func main() {
@@ -56,11 +56,21 @@ func main() {
 			e := strings.Split(file, ".")
 			extension := e[len(e)-1]
 			command := ""
+			comp := ""
+
 			if extension == "sass" {
-				command = strings.Replace(wasm.CssComp.Sass, "INPUT", path, -1)
+				comp = wasm.CssComp.Sass
+			} else if extension == "scss" {
+				comp = wasm.CssComp.Scss
+			}
+			
+			if comp != "" {
+				file = file[:len(file)-5]
+				command = strings.Replace(comp, "INPUT", path, -1)
 				command = strings.Replace(command, "OUTPUT", wasm.Output + "/" + file + ".css", -1)
 			}
-			status("Building Sass", command)
+
+			status("Building Styles", command)
 			_, err = exec.Command("sh", "-c", command).Output()
 			return err
 		}

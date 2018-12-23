@@ -10,5 +10,6 @@ cssdir: sass
 csscomp:
   # OUTPUT and INPUT are placeholders for the args to use
   sass: sass INPUT OUTPUT
+  scss: sass INPUT OUTPUT
 # Output dir for compiled, static HTML, CSS, JS and wasm
 output: target

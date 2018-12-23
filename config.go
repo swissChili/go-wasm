@@ -7,7 +7,7 @@ type Config struct {
 	CssDir string
 	CssComp struct {
 		Sass string
-		Sccs string
+		Scss string
 	}
 	Output string
 }
