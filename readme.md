@@ -1,6 +1,13 @@
 # go-wasm
 A Go build utility for WebAssembly projects
 
+## Installation
+```sh
+$ go install github.com/swissChili/go-wasm
+# make sure $GOPATH/bin is in your $PATH!
+$ go-wasm -h
+```
+
 ## Building
 ```sh
 go build -o wasm *.go
