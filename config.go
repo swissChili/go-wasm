@@ -8,6 +8,7 @@ type Config struct {
 	CssComp struct {
 		Sass string
 		Scss string
+		Less string
 	}
 	Output string
 }

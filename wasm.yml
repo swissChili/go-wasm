@@ -1,7 +1,7 @@
 # directory to use as static dir for HTML
 static: static
 # Go files to build
-source: "*.go"
+source: "example/wasm.go"
 # Target to compile to
 target: wasm
 # Directory to read raw, uncompiled CSS from
@@ -11,5 +11,6 @@ csscomp:
   # OUTPUT and INPUT are placeholders for the args to use
   sass: sass INPUT OUTPUT
   scss: sass INPUT OUTPUT
+  less: lessc INPUT OUTPUT
 # Output dir for compiled, static HTML, CSS, JS and wasm
-output: target
+output: docs

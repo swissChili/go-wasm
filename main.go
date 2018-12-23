@@ -13,6 +13,9 @@ import (
 	"strings"
 	fp "path/filepath"
 	"os"
+	"log"
+	"flag"
+	"net/http"
 )
 
 func fileNotFound(err error) {
@@ -30,7 +33,17 @@ func status(short string, desc string) {
 	fmt.Printf("%16s :: %s\n", Cyan(short), desc)
 }
 
+var (
+	port = flag.String("port", ":8080", "listen address")
+	serve = flag.Bool("serve", true, "start a server?")
+)
+
+
+
 func main() {
+	flag.Parse()
+
+
 	dat, err := ioutil.ReadFile("wasm.yml")
 	fileNotFound(err)
 
@@ -38,8 +51,12 @@ func main() {
 	yaml.Unmarshal(dat, &wasm)
 
 	// Move all of the static dir contents
-	err = Copy(wasm.Static, wasm.Output)
+	
 	status("Copying Static", fmt.Sprintf("%s -> %s", wasm.Static, wasm.Output))
+	err = os.RemoveAll(wasm.Output)
+	if err != nil { panic(err) }
+
+	err = Copy(wasm.Static, wasm.Output)
 	if err != nil { panic(err) }
 
 	// Compile the go files
@@ -62,8 +79,10 @@ func main() {
 				comp = wasm.CssComp.Sass
 			} else if extension == "scss" {
 				comp = wasm.CssComp.Scss
+			} else if extension == "less" {
+				comp = wasm.CssComp.Less
 			}
-			
+
 			if comp != "" {
 				file = file[:len(file)-5]
 				command = strings.Replace(comp, "INPUT", path, -1)
@@ -78,4 +97,19 @@ func main() {
 	})
 	if err != nil { panic(err) }
 
+	// Generate the JavaScript to load 
+	const fullLoader = execScript + wasmLoader
+	status("Generating JS", wasm.Output + "/index.js")
+
+	err = ioutil.WriteFile(wasm.Output + "/index.js", []byte(fullLoader), 0644)
+	if err != nil {
+		panic(err)
+	}
+
+	// Start server
+	
+	if *serve {
+		status("Serving", fmt.Sprintf("%s on %s", wasm.Output, *port))
+		log.Fatal(http.ListenAndServe(*port, http.FileServer(http.Dir(wasm.Output))))
+	}
 }
