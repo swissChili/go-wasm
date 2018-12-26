@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"github.com/go-yaml/yaml"
-	//fp "path/filepath"
-	"os/exec"
 	. "github.com/logrusorgru/aurora"
 	// am I really importing something just to copy a dir?
 	// yep. 
@@ -62,7 +60,7 @@ func main() {
 	// Compile the go files
 	buildCmd := fmt.Sprintf("GOOS=js GOARCH=wasm go build -o %s/main.wasm %s", wasm.Output, wasm.Source)
 	status("Building Go", wasm.Source)
-	_, err = exec.Command("sh", "-c", buildCmd).Output()
+	err = runCommand(buildCmd)
 	if err != nil { panic(err) }
 
 	// Compile all the sass files
@@ -90,7 +88,7 @@ func main() {
 			}
 
 			status("Building Styles", command)
-			_, err = exec.Command("sh", "-c", command).Output()
+			err = runCommand(command)
 			return err
 		}
 		return nil
