@@ -1,7 +1,8 @@
 # directory to use as static dir for HTML
 static: static
 # Go files to build
-source: "example/wasm.go"
+source:
+  - example/wasm.go
 # Target to compile to
 target: wasm
 # Directory to read raw, uncompiled CSS from

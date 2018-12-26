@@ -57,9 +57,11 @@ func main() {
 	err = Copy(wasm.Static, wasm.Output)
 	if err != nil { panic(err) }
 
+	sources := strings.Join(wasm.Source, " ")
+
 	// Compile the go files
-	buildCmd := fmt.Sprintf("GOOS=js GOARCH=wasm go build -o %s/main.wasm %s", wasm.Output, wasm.Source)
-	status("Building Go", wasm.Source)
+	buildCmd := fmt.Sprintf("GOOS=js GOARCH=wasm go build -o %s/main.wasm %s", wasm.Output, sources)
+	status("Building Go", sources)
 	err = runCommand(buildCmd)
 	if err != nil { panic(err) }
 

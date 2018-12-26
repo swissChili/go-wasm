@@ -2,7 +2,7 @@ package main
 
 type Config struct {
 	Static string
-	Source string
+	Source []string
 	Target string
 	CssDir string
 	CssComp struct {

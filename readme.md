@@ -22,7 +22,9 @@ go-wasm reads from a `wasm.yml` file in your current directory. Here is an examp
 # directory to use as static dir for HTML
 static: static
 # Go files to build
-source: "*.go"
+source:
+  - "somefile.go"
+  - "someotherfile.go"
 # Target to compile to
 target: wasm
 # Directory to read raw, uncompiled CSS from
@@ -50,4 +52,4 @@ compiling makes.
 Did I mention this has a nifty little server to serve up your fresh-off-the-compiler wasm project?
 Well it does! No need to configure anything, it will automatically serve from the directory you
 built to, and defaults to port `8080`. Use the `-port` flag to use a different port
-> eg: `wasm -port 9090`
+> eg: `go-wasm -port 9090`
