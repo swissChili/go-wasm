@@ -14,6 +14,11 @@ go build -o wasm *.go
 ```
 
 ## Usage
+
+I wrote a small post on using this on [dev.to](https://dev.to/swisschili/easily-building-wasm-projects-with-go-and-go-wasm-2ci2).
+I suggest you take a look at it if you'd like to see a slightly more in-depth guide at using this
+software.
+
 > **IMPORTANT**: Please add a script tag with source `index.js` in your `index.html` file! This is
 > used to load your web assembly
 
