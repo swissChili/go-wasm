@@ -14,6 +14,7 @@ import (
 	"log"
 	"flag"
 	"net/http"
+	"github.com/fsnotify/fsnotify"
 )
 
 func fileNotFound(err error) {
@@ -34,6 +35,9 @@ func status(short string, desc string) {
 var (
 	port = flag.String("port", ":8080", "listen address")
 	serve = flag.Bool("serve", true, "start a server?")
+	// watches for CSS changes
+	watcher   *fsnotify.Watcher
+	goWatcher *fsnotify.Watcher
 )
 
 
@@ -48,6 +52,13 @@ func main() {
 	var wasm Config
 	yaml.Unmarshal(dat, &wasm)
 
+	// Start up both the watchers
+	watcher, _ = fsnotify.NewWatcher()
+	defer watcher.Close()
+
+	goWatcher, _ = fsnotify.NewWatcher()
+	defer goWatcher.Close()
+
 	// Move all of the static dir contents
 	
 	status("Copying Static", fmt.Sprintf("%s -> %s", wasm.Static, wasm.Output))
@@ -59,42 +70,21 @@ func main() {
 
 	sources := strings.Join(wasm.Source, " ")
 
+	for _, s := range wasm.Source {
+		if goWatcher.Add(s) != nil {
+			panic("Failed to add source "+s+" to watcher")
+		}
+	}
+
 	// Compile the go files
-	buildCmd := fmt.Sprintf("GOOS=js GOARCH=wasm go build -o %s/main.wasm %s", wasm.Output, sources)
-	status("Building Go", sources)
-	err = runCommand(buildCmd)
-	if err != nil { panic(err) }
+	compileGo(wasm.Output, sources)
 
 	// Compile all the sass files
-	err = fp.Walk(wasm.CssDir, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			f := strings.Split(path, "/")
-			file := f[len(f)-1]
-			e := strings.Split(file, ".")
-			extension := e[len(e)-1]
-			command := ""
-			comp := ""
+	err = compileCSS(wasm.CssDir, wasm.Output, wasm.CssComp)
+	if err != nil { panic(err) }
 
-			if extension == "sass" {
-				comp = wasm.CssComp.Sass
-			} else if extension == "scss" {
-				comp = wasm.CssComp.Scss
-			} else if extension == "less" {
-				comp = wasm.CssComp.Less
-			}
-
-			if comp != "" {
-				file = file[:len(file)-5]
-				command = strings.Replace(comp, "INPUT", path, -1)
-				command = strings.Replace(command, "OUTPUT", wasm.Output + "/" + file + ".css", -1)
-			}
-
-			status("Building Styles", command)
-			err = runCommand(command)
-			return err
-		}
-		return nil
-	})
+	// Register the dir items to be watched
+	err = fp.Walk(wasm.CssDir, watchDir)
 	if err != nil { panic(err) }
 
 	// Generate the JavaScript to load 
@@ -109,7 +99,13 @@ func main() {
 	// Start server
 	
 	if *serve {
+		done := make(chan bool)
+
+		go watchAndRecompileCSS(wasm.CssDir, wasm.Output, wasm.CssComp)
+		go watchAndRecompileGo(wasm.Output, sources)
 		status("Serving", fmt.Sprintf("%s on %s", wasm.Output, *port))
 		log.Fatal(http.ListenAndServe(*port, http.FileServer(http.Dir(wasm.Output))))
+
+		<-done
 	}
 }
