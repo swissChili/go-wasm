@@ -10,7 +10,7 @@ $ go-wasm -h
 
 ## Building
 ```sh
-go build -o wasm *.go
+$ make
 ```
 
 ## Usage
